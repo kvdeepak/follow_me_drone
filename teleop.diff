@@ -1,0 +1,36 @@
+diff --git a/teleop_twist_keyboard.py b/teleop_twist_keyboard.py
+index c705b61..81d92e6 100755
+--- a/teleop_twist_keyboard.py
++++ b/teleop_twist_keyboard.py
+@@ -7,6 +7,8 @@ import rospy
+ 
+ from geometry_msgs.msg import Twist
+ 
++from std_msgs.msg import Empty
++
+ import sys, select, termios, tty
+ 
+ msg = """
+@@ -79,7 +81,10 @@ def vels(speed,turn):
+ if __name__=="__main__":
+     settings = termios.tcgetattr(sys.stdin)
+ 
+-    pub = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
++    pub = rospy.Publisher('bebop/cmd_vel', Twist, queue_size = 1)
++    pub2 = rospy.Publisher('bebop/takeoff', Empty, queue_size = 1)
++    pub3 = rospy.Publisher('bebop/land', Empty, queue_size = 1)
++    empty_msg = Empty()
+     rospy.init_node('teleop_twist_keyboard')
+ 
+     speed = rospy.get_param("~speed", 0.5)
+@@ -108,6 +113,10 @@ if __name__=="__main__":
+                 if (status == 14):
+                     print(msg)
+                 status = (status + 1) % 15
++            elif key == '1':
++                pub2.publish(empty_msg)
++            elif key == '2':
++                pub3.publish(empty_msg)
+             else:
+                 x = 0
+                 y = 0
