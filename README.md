@@ -14,5 +14,6 @@ TODO:
 Agent function to control motion of quad
 
 Important links:
-https://bebop-autonomy.readthedocs.io/en/latest/
-http://wiki.ros.org/cv_bridge/Tutorials/ConvertingBetweenROSImagesAndOpenCVImagesPython
+1) https://bebop-autonomy.readthedocs.io/en/latest/
+2) http://wiki.ros.org/cv_bridge/Tutorials/ConvertingBetweenROSImagesAndOpenCVImagesPython
+3) https://github.com/ros-teleop/teleop_twist_keyboard
