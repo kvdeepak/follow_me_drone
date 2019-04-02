@@ -1,48 +1,55 @@
 #!/usr/bin/env python
-#from __future__ import print_function
 
 import roslib
 import sys
 import rospy
 import cv2
+from std_msgs.msg import String
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import tensorflow as tf
 import time
 
-from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
-
-
+#comment below 3 lines if no gpu
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 session = tf.Session(config=config)
 
+pub = rospy.Publisher('/bbox', String, queue_size=10)
+
 class ImageConverter:
 
   def __init__(self):
+    self.count = 0
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/bebop/image_raw",Image,self.callback)
+    self.detectRate = 10
+    self.threshold = 0.9
 
   def callback(self,data):
-    #Convert ros msg to opencv image
+    start_time = time.time()
+    self.count = self.count+1
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
     except CvBridgeError as e:
       print(e)
+      return
 
-    threshold = 0.7
-    img = cv_image
+    #threshold = 0.7
+    if self.count % self.detectRate == 0:
+        boxes, scores, classes, num = odapi.processFrame(cv_image)
+        # Visualization of the results of a detection.
+        i = classes.index(1)
+        #score = scores[i]
+        box = boxes[i]
+        pub.publish(",".join([box[1],box[0]),(box[3],box[2])])
+        cv2.rectangle(cv_image,(box[1],box[0]),(box[3],box[2]),(255,0,0),2)
 
-    boxes, scores, classes, num = odapi.processFrame(img)
-
-    # Visualization of the results of a detection.
-    for i in range(len(boxes)):
-        if classes[i] == 1 and scores[i] > threshold:
-            box = boxes[i]
-            cv2.rectangle(img,(box[1],box[0]),(box[3],box[2]),(255,0,0),2)
-
-    cv2.imshow("preview", img)
+    cv2.imshow("preview", cv_image)
     key = cv2.waitKey(1)
+    end_time = time.time()
+    print("Elapsed Time:", end_time-start_time)
 
 
 class DetectorAPI:
@@ -74,13 +81,13 @@ class DetectorAPI:
         # Expand dimensions since the trained_model expects images to have shape: [1, None, None, 3]
         image_np_expanded = np.expand_dims(image, axis=0)
         # Actual detection.
-        start_time = time.time()
+        #start_time = time.time()
         (boxes, scores, classes, num) = self.sess.run(
             [self.detection_boxes, self.detection_scores, self.detection_classes, self.num_detections],
             feed_dict={self.image_tensor: image_np_expanded})
-        end_time = time.time()
+        #end_time = time.time()
 
-        print("Elapsed Time:", end_time-start_time)
+        #print("Elapsed Time:", end_time-start_time)
 
         im_height, im_width,_ = image.shape
         boxes_list = [None for i in range(boxes.shape[1])]
@@ -96,7 +103,8 @@ class DetectorAPI:
         self.sess.close()
         self.default_graph.close()
 
-model_path = './src/image_subscriber/ssd_inception_v2_coco_2018_01_28/frozen_inference_graph.pb'
+model_path = './src/image_subscriber/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
+#model_path = './src/image_subscriber/faster_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb'
 odapi = DetectorAPI(path_to_ckpt=model_path)
 
 def main(args):
@@ -110,4 +118,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-
