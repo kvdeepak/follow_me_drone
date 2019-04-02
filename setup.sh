@@ -7,6 +7,8 @@ catkin_create_pkg image_subscriber sensor_msgs cv_bridge rospy std_msgs
 cd image_subscriber/
 wget download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_2018_01_28.tar.gz
 tar -xzvf ssd_inception_v2_coco_2018_01_28.tar.gz
+wget http://download.tensorflow.org/models/object_detection/faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
+tar -xzvf faster_rcnn_inception_v2_coco_2018_01_28.tar.gz
 mv ../../../human-detection.py .
 cd ../teleop_twist_keyboard/
 git apply ../../../teleop.diff
