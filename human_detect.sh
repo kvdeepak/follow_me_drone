@@ -1,2 +1,2 @@
 source devel/source.bash
-rosrun image_subscriber tensorflow-human-detection.py
+rosrun image_subscriber human-detection.py
